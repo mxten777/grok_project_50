@@ -6,12 +6,14 @@ import { randomBytes } from 'crypto';
 
 // Firebase Admin 초기화 (서버에서만)
 if (getApps().length === 0) {
+  const firebaseAdminKey = process.env.FIREBASE_ADMIN_KEY;
+  if (!firebaseAdminKey) {
+    throw new Error('FIREBASE_ADMIN_KEY environment variable is not set');
+  }
+  
+  const serviceAccount = JSON.parse(firebaseAdminKey);
   initializeApp({
-    credential: cert({
-      projectId: process.env.FIREBASE_PROJECT_ID,
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-    }),
+    credential: cert(serviceAccount),
   });
 }
 
