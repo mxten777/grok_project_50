@@ -1,6 +1,6 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import jwt from 'jsonwebtoken';
-import { initializeApp, cert } from 'firebase-admin/app';
+import { initializeApp, cert, getApps } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 
 interface QRTokenPayload {
@@ -12,7 +12,7 @@ interface QRTokenPayload {
 }
 
 // Firebase Admin 초기화
-if (!initializeApp.length) {
+if (getApps().length === 0) {
   initializeApp({
     credential: cert({
       projectId: process.env.FIREBASE_PROJECT_ID,
