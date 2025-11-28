@@ -1,6 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
-import QRCodeStyling from 'qr-code-styling';
-import { X, RefreshCw } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { X } from 'lucide-react';
 
 interface QRCodeModalProps {
   token: string;
@@ -9,60 +8,40 @@ interface QRCodeModalProps {
 }
 
 const QRCodeModal = ({ token, seatId, onClose }: QRCodeModalProps) => {
-  const qrRef = useRef<HTMLDivElement>(null);
-  const qrCode = useRef<QRCodeStyling | null>(null);
+  const [qrDataUrl, setQrDataUrl] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (!token) return;
 
-    console.log('QR 코드 생성 시작:', { token: token.substring(0, 20) + '...' });
+    console.log('QR 코드 생성 시작 (간단한 방식):', { token: token.substring(0, 20) + '...' });
 
-    // DOM이 준비될 때까지 잠시 대기
-    const timer = setTimeout(async () => {
-      if (!qrRef.current) {
-        console.error('QR ref가 준비되지 않음');
-        setIsLoading(false);
-        return;
-      }
-
+    const generateSimpleQR = async () => {
       try {
-        // 기존 QR 코드 제거
-        if (qrCode.current) {
-          qrRef.current.innerHTML = '';
-        }
-
-        // QR 코드 생성
-        qrCode.current = new QRCodeStyling({
-          width: 280,
-          height: 280,
-          data: token,
-          dotsOptions: {
-            color: '#000000',
-            type: 'square',
-          },
-          backgroundOptions: {
-            color: '#ffffff',
-          },
-          qrOptions: {
-            errorCorrectionLevel: 'L', // 더 단순하게
-          },
-        });
-
-        console.log('QR 코드 객체 생성 완료');
+        // QRCode.js를 동적으로 import
+        const QRCodeLib = await import('qrcode');
         
-        // QR 코드를 DOM에 추가하고 로딩 완료
-        await qrCode.current.append(qrRef.current);
-        console.log('QR 코드 DOM에 추가 완료');
+        // QR 코드를 Data URL로 생성
+        const dataUrl = await QRCodeLib.default.toDataURL(token, {
+          width: 300,
+          margin: 2,
+          color: {
+            dark: '#000000',
+            light: '#ffffff'
+          }
+        });
+        
+        console.log('QR 코드 생성 완료');
+        setQrDataUrl(dataUrl);
         setIsLoading(false);
-
       } catch (error) {
         console.error('QR 코드 생성 에러:', error);
+        // fallback: 텍스트로 토큰 표시
         setIsLoading(false);
       }
-    }, 200);
+    };
 
-    return () => clearTimeout(timer);
+    generateSimpleQR();
   }, [token]);
 
   return (
@@ -93,17 +72,30 @@ const QRCodeModal = ({ token, seatId, onClose }: QRCodeModalProps) => {
           <div className="p-4 bg-gray-100 dark:bg-gray-700 rounded-lg">
             {isLoading ? (
               <div className="w-[300px] h-[300px] flex items-center justify-center">
-                <RefreshCw size={48} className="animate-spin text-gray-400" />
+                <div className="text-center">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                  <p className="text-gray-600 dark:text-gray-400">QR 코드 생성 중...</p>
+                </div>
               </div>
+            ) : qrDataUrl ? (
+              <img 
+                src={qrDataUrl} 
+                alt="QR Code" 
+                className="w-[300px] h-[300px] border-2 border-gray-200 dark:border-gray-600 rounded"
+              />
             ) : (
-              <div ref={qrRef} className="border-2 border-gray-200 dark:border-gray-600 rounded"></div>
+              <div className="w-[300px] h-[300px] flex items-center justify-center border-2 border-gray-200 dark:border-gray-600 rounded bg-white">
+                <div className="text-center p-4">
+                  <p className="text-sm font-mono break-all text-gray-800 mb-2">토큰:</p>
+                  <p className="text-xs font-mono break-all text-gray-600">{token}</p>
+                </div>
+              </div>
             )}
           </div>
         </div>
 
-        <div className="flex items-center justify-center text-sm text-gray-500 dark:text-gray-400 mb-4">
-          <RefreshCw size={16} className="mr-2 animate-spin" />
-          {isLoading ? 'QR 코드 생성 중...' : 'QR 코드가 자동으로 새로고침됩니다'}
+        <div className="text-center text-sm text-gray-500 dark:text-gray-400 mb-4">
+          {isLoading ? '잠시만 기다려주세요...' : qrDataUrl ? 'QR 코드를 스캔하세요' : '토큰을 직접 입력하세요'}
         </div>
 
         <div className="text-xs text-gray-500 dark:text-gray-400 text-center">
