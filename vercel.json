@@ -2,14 +2,8 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "functions": {
-    "api/generate-qr.ts": {
-      "runtime": "@vercel/node@3"
-    },
-    "api/checkin.ts": {
-      "runtime": "@vercel/node@3"
-    },
-    "api/occupy.ts": {
-      "runtime": "@vercel/node@3"
+    "api/**/*.ts": {
+      "runtime": "nodejs18.x"
     }
   },
   "headers": [
