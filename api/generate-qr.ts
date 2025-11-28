@@ -4,18 +4,33 @@ import { initializeApp, cert, getApps } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import { randomBytes } from 'crypto';
 
-// Firebase Admin 초기화 (서버에서만)
-if (getApps().length === 0) {
-  const firebaseAdminKey = process.env.FIREBASE_ADMIN_KEY;
-  if (!firebaseAdminKey) {
-    throw new Error('FIREBASE_ADMIN_KEY environment variable is not set');
+// Firebase Admin 초기화 함수
+function initializeFirebaseAdmin() {
+  if (getApps().length === 0) {
+    try {
+      const firebaseAdminKey = process.env.FIREBASE_ADMIN_KEY;
+      if (!firebaseAdminKey) {
+        console.error('FIREBASE_ADMIN_KEY environment variable not found');
+        throw new Error('FIREBASE_ADMIN_KEY environment variable is not set');
+      }
+
+      console.log('Parsing Firebase Admin Key...');
+      const serviceAccount = JSON.parse(firebaseAdminKey);
+      console.log('Service account parsed successfully');
+
+      initializeApp({
+        credential: cert(serviceAccount),
+      });
+      console.log('Firebase Admin initialized successfully');
+    } catch (error) {
+      console.error('Firebase Admin initialization failed:', error);
+      throw new Error(`Firebase initialization failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
   }
-  
-  const serviceAccount = JSON.parse(firebaseAdminKey);
-  initializeApp({
-    credential: cert(serviceAccount),
-  });
 }
+
+// Firebase Admin 초기화
+initializeFirebaseAdmin();
 
 const db = getFirestore();
 
