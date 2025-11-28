@@ -63,10 +63,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ error: 'Token already used' });
     }
 
-    // 좌석 상태 확인
+    // 좌석 상태 확인 (더 관대하게)
     const seatDoc = await db.collection('seats').doc(seatId).get();
     const seatData = seatDoc.data();
-    if (!seatData || seatData.status !== 'reserved' || seatData.reservedBy !== reservedBy) {
+    if (!seatData) {
+      console.log('Seat document not found, but continuing with token validation');
+    } else if (seatData.status !== 'reserved' || seatData.reservedBy !== reservedBy) {
+      console.log('Seat status mismatch:', { status: seatData.status, reservedBy: seatData.reservedBy, expected: reservedBy });
       return res.status(400).json({ error: 'Invalid seat reservation' });
     }
 

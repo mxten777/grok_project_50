@@ -43,12 +43,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       used: true,
     });
 
-    // 좌석 점유 상태 업데이트
-    await db.collection('seats').doc(seatId).update({
+    // 좌석 점유 상태 생성/업데이트
+    await db.collection('seats').doc(seatId).set({
       status: 'occupied',
       occupiedBy: userId,
       occupiedAt: new Date(),
-    });
+      seatId,
+      lastUpdated: new Date(),
+    }, { merge: true });
 
     res.status(200).json({ success: true });
   } catch (error) {

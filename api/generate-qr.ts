@@ -103,14 +103,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
       console.log('Token saved to Firestore');
 
-      // 좌석 예약 상태 업데이트
-      await db.collection('seats').doc(seatId).update({
+      // 좌석 예약 상태 생성/업데이트 (set을 사용하여 문서가 없어도 생성)
+      await db.collection('seats').doc(seatId).set({
+        seatId,
+        seatNumber,
+        floorId,
         status: 'reserved',
         reservedBy: userId,
         reservedAt: new Date(reservedAt),
         expiresAt: new Date(expiresAt),
-      });
-      console.log('Seat status updated');
+        createdAt: new Date(),
+      }, { merge: true });
+      console.log('Seat status created/updated');
     } catch (firestoreError) {
       console.error('Firestore operation error:', firestoreError);
       return res.status(500).json({ 
