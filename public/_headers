@@ -1,0 +1,14 @@
+# JavaScript 파일들의 올바른 MIME 타입 설정
+/assets/*.js
+  Content-Type: text/javascript
+
+# CSS 파일들의 MIME 타입 설정  
+/assets/*.css
+  Content-Type: text/css
+
+# ES 모듈 파일들
+/src/*.js
+  Content-Type: text/javascript
+  
+/src/**/*.js
+  Content-Type: text/javascript
