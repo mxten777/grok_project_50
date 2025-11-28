@@ -50,13 +50,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { seatId, userId } = req.body;
-  console.log('Request data:', { seatId, userId });
+  const { seatNumber, floorId, userId } = req.body;
+  console.log('Request data:', { seatNumber, floorId, userId });
 
-  if (!seatId || !userId) {
-    console.log('Missing required fields:', { seatId: !!seatId, userId: !!userId });
-    return res.status(400).json({ error: 'Missing seatId or userId' });
+  if (!seatNumber || !floorId || !userId) {
+    console.log('Missing required fields:', { seatNumber: !!seatNumber, floorId: !!floorId, userId: !!userId });
+    return res.status(400).json({ error: 'Missing seatNumber, floorId, or userId' });
   }
+
+  // seatId 생성 (floorId + seatNumber)
+  const seatId = `${floorId}-${seatNumber}`;
 
   try {
     // 환경 변수 확인
